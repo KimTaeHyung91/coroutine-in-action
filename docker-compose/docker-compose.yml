@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ..
+      args:
+        profile_active: dev
+    container_name: coroutine-benchmark-app
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus-linux-arm64
+    container_name: prometheus
+    volumes:
+      - ../prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    depends_on:
+      - app
+
+  loki:
+    image: grafana/loki
+    container_name: loki
+    volumes:
+      - ../loki-config.yml:/etc/loki/loki-config.yml
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail
+    container_name: promtail
+    volumes:
+      - ../promtail-config.yml:/etc/promtail/promtail-config.yml
+      - ./promtail-container:/var/lib/docker/container:ro
+    command: -config.file=/etc/promtail/promtail-config.yml
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - ./grafana-storage:/var/lib/grafana
+      - ../grafana.ini:/etc/grafana/grafana.ini
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PLUGINS_PREINSTALL=grafana-clock-panel
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+      - loki
+
+networks:
+  monitoring:
+
+volumes:
+  grafana-storage: {}
+  promtail-container: {}

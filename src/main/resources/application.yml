@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: coroutine-benchmark
+  profiles:
+    default: local
+
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info
+  metrics:
+    tags:
+      application: coroutine-benchmark
+  endpoint:
+    prometheus:
+      enabled: true
