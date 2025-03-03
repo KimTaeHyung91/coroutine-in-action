@@ -3,7 +3,7 @@ version: "3.8"
 services:
   app:
     build:
-      context: ..
+      context: ../docker/spring
       args:
         profile_active: dev
     container_name: coroutine-benchmark-app
@@ -69,6 +69,20 @@ services:
     depends_on:
       - prometheus
       - loki
+  gatling:
+    build:
+      context: ../docker/gatling
+    container_name: gatling
+    environment:
+      - SIMULATION=gatling.kotlin.TestSimulation
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+      - grafana
+      - loki
+      - promtail
+      - app
 
 networks:
   monitoring:

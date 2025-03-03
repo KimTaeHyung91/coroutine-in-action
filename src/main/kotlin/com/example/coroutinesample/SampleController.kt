@@ -1,56 +1,38 @@
 package com.example.coroutinesample
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class SampleController(private val sampleService: SampleService) {
+class SampleController(
+    private val sampleService: SampleService,
+) {
     @GetMapping("/blocking")
-    fun test(): String {
-        for (i in 1..100) {
-            sampleService.doSomething1("doSomething$i")
-            Thread.sleep(250) // 외부 api1 조회
+    fun test(): Response {
+        sampleService.doSomething1("string value")
 
-            sampleService.doSomething1("doSomething${i + 1}")
-            Thread.sleep(250) // 외부 api2 조회
-        }
-
-        return "Complete"
+        return Response("Complete")
     }
 
-    @GetMapping("/non-blocking")
-    fun test2(): String {
+    @GetMapping("/non-blocking1")
+    fun test2(): Response {
         val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-        val list = arrayListOf<Deferred<Unit>>()
-        for (i in 1..100) {
-            val str1 =
-                scope.async {
-                    sampleService.doSomething2("doSomething$i")
-                    delay(250)
-                }
+        val str1 = scope.async { sampleService.doSomething2("string value") }
 
-            val str2 =
-                scope.async {
-                    sampleService.doSomething2("doSomething${i + 1}")
-                    delay(250)
-                }
+        runBlocking { str1.await() }
 
-            list.add(str1)
-            list.add(str2)
-        }
-
-        return runBlocking {
-            list.awaitAll()
-            "Complete"
-        }
+        return Response("Complete")
     }
+
+    @GetMapping("/non-blocking2")
+    fun test3(): Response {
+        sampleService.doSomething3("string value")
+        return Response("Complete")
+    }
+
+    data class Response(
+        val data: String,
+    )
 }

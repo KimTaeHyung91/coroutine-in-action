@@ -1,11 +1,11 @@
 FROM eclipse-temurin:21.0.4_7-jre-alpine as build
 WORKDIR /builder
 
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle.kts ./
-COPY settings.gradle.kts ./
-COPY src src
+COPY ../../gradlew .
+COPY ../../gradle gradle
+COPY ../../build.gradle.kts ./
+COPY ../../settings.gradle.kts ./
+COPY ../../src src
 
 RUN chmod +x ./gradlew
 
