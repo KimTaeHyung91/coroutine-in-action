@@ -7,6 +7,8 @@ spring:
 
 ---
 spring:
+  application:
+    name: coroutine-benchmark
   config:
     activate:
       on-profile: dev
@@ -15,7 +17,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus, health, info
+        include: "*"
   metrics:
     tags:
       application: coroutine-benchmark

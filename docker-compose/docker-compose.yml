@@ -3,19 +3,12 @@ version: "3.8"
 services:
   app:
     build:
-      context: ../docker/spring
-      args:
-        profile_active: dev
+      context: ..
     container_name: coroutine-benchmark-app
     ports:
       - "8080:8080"
     networks:
       - monitoring
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   prometheus:
     image: prom/prometheus-linux-arm64
@@ -40,18 +33,6 @@ services:
     networks:
       - monitoring
 
-  promtail:
-    image: grafana/promtail
-    container_name: promtail
-    volumes:
-      - ../promtail-config.yml:/etc/promtail/promtail-config.yml
-      - ./promtail-container:/var/lib/docker/container:ro
-    command: -config.file=/etc/promtail/promtail-config.yml
-    networks:
-      - monitoring
-    depends_on:
-      - loki
-
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
@@ -68,25 +49,9 @@ services:
       - monitoring
     depends_on:
       - prometheus
-      - loki
-  gatling:
-    build:
-      context: ../docker/gatling
-    container_name: gatling
-    environment:
-      - SIMULATION=gatling.kotlin.TestSimulation
-    networks:
-      - monitoring
-    depends_on:
-      - prometheus
-      - grafana
-      - loki
-      - promtail
-      - app
 
 networks:
   monitoring:
 
 volumes:
   grafana-storage: {}
-  promtail-container: {}

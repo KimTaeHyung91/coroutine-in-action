@@ -19,6 +19,12 @@ class SampleService {
         logger.info { "[${Thread.currentThread().name}] $value :: save to something in doSomething2" }
     }
 
+    suspend fun doSomething4(value: String): String {
+        delay(250)
+        logger.info { "[${Thread.currentThread().name}] $value :: save to something in doSomething2" }
+        return "Complete, $value"
+    }
+
     @Async
     fun doSomething3(value: String) {
         Thread.sleep(250)

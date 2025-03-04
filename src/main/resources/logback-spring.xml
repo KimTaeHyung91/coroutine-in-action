@@ -1,14 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
+  <springProperty name="name" source="spring.application.name" />
 
-  <springProfile name="!local">
-    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-        <timestampPattern>yyyy-MM-dd HH:mm:ss.SSS</timestampPattern>
-      </encoder>
+
+  <springProfile name="dev">
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+      <http>
+        <url>http://loki:3100/loki/api/v1/push</url>
+      </http>
+      <format>
+        <label>
+          <pattern>app=${name},host=${HOSTNAME},level=%level</pattern>
+          <!-- (3) -->
+          <readMarkers>true</readMarkers>
+        </label>
+        <message class="com.github.loki4j.logback.JsonLayout" />
+      </format>
     </appender>
 
     <root level="INFO">
-      <appender-ref ref="JSON_CONSOLE" />
+      <appender-ref ref="LOKI" />
     </root>
   </springProfile>
 

@@ -3,6 +3,7 @@ package com.example.coroutinesample
 import kotlinx.coroutines.*
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.function.ServerResponse.async
 
 @RestController
 class SampleController(
@@ -19,11 +20,18 @@ class SampleController(
     fun test2(): Response {
         val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-        val str1 = scope.async { sampleService.doSomething2("string value") }
-
-        runBlocking { str1.await() }
+        scope.launch {
+            sampleService.doSomething2("string value")
+        }
 
         return Response("Complete")
+    }
+
+    @GetMapping("/non-blocking1-1")
+    fun test4(): Response {
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val async = scope.async { sampleService.doSomething4("string value") }
+        return runBlocking(Dispatchers.IO) { Response(async.await()) }
     }
 
     @GetMapping("/non-blocking2")
